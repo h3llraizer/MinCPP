@@ -46,14 +46,114 @@ namespace mincpp {
     ostream* cout = nullptr;
 }
 
+namespace mincpp{
 
+template<typename T>
+class unique_ptr {
+public:
+
+    // Constructors
+    unique_ptr() noexcept
+        : ptr_(0) {}
+
+    explicit unique_ptr(T* ptr) noexcept
+        : ptr_(ptr) {}
+
+    
+    // delete copy semenatics
+    unique_ptr(const unique_ptr&) = delete;
+    unique_ptr& operator=(const unique_ptr&) = delete;
+
+
+    // move constructor
+    unique_ptr(unique_ptr&& other) noexcept
+        : ptr_(other.ptr_) {
+        other.ptr_ = 0;
+    }
+
+    // move assignment
+    unique_ptr& operator=(unique_ptr&& other) noexcept {
+        if (this != &other) {
+            reset();
+            ptr_ = other.ptr_;
+            other.ptr_ = 0;
+        }
+        return *this;
+    }
+
+    // destructor
+    ~unique_ptr() {
+        delete ptr_;
+    }
+  
+    // observers
+    T* get() const noexcept {
+        return ptr_;
+    }
+
+    T& operator*() const noexcept {
+        return *ptr_;
+    }
+
+    T* operator->() const noexcept {
+        return ptr_;
+    }
+
+    explicit operator bool() const noexcept {
+        return ptr_ != 0;
+    }
+
+
+    // modifiers
+    T* release() noexcept {
+        T* tmp = ptr_;
+        ptr_ = 0;
+        return tmp;
+    }
+
+    void reset(T* new_ptr = 0) noexcept {
+        if (ptr_ != new_ptr) {
+            delete ptr_;
+            ptr_ = new_ptr;
+        }
+    }
+
+private:
+    T* ptr_;
+};
+
+}
+//
+//template <typename T> T myMax(T x, T y){
+//    return (x > y) ? x : y;
+//}
+
+class Widget {
+    private:
+        int x_{};
+    public:
+        Widget() = default;
+        Widget(int x) : x_(x) {}
+
+        ~Widget() = default;
+        
+        auto getX()
+        {
+           return x_;  
+        }
+
+};
 
 int main() {
 
     mincpp::ostream cout;
     cout << "Hello,dojenoej \n";
 
-    decltype(cout) coutPtr = cout;
+    auto w = Widget(1); 
+
+    mincpp::unique_ptr<Widget> uw(new Widget(42));
+
+    cout << "Unique-Widget X Value: "  <<  uw->getX() << "\n";
 
     return 0;
 }
